@@ -14,4 +14,4 @@
 /gen
 *.log
 /.navigation
-/.idea/
+.idea/
