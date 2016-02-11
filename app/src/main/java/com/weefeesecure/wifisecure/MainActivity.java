@@ -96,10 +96,23 @@ public class MainActivity extends AppCompatActivity {
             mIsConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
             mIsWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
             if (mIsConnected && mIsWifi) {
-                Toast.makeText(context.getApplicationContext(), "Wifi Connected", Toast.LENGTH_LONG).show();
+                new showTextThread("Wifi Connected").run();
             }
             else
-                Toast.makeText(context.getApplicationContext(),"Wifi Not Connected", Toast.LENGTH_LONG).show();
+                new showTextThread("Wifi Not Connected").run();
+        }
+        protected class showTextThread extends Thread {
+            private String text;
+            showTextThread(String text) {
+                this.text = text;
+            };
+            private void showToastText() {
+                Toast.makeText(getApplicationContext(),text,Toast.LENGTH_LONG).show();
+            }
+            @Override
+            public void run() {
+                showToastText();
+            }
         }
     }
 }
