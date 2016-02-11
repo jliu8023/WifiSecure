@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private InfoThread mThread;
     private boolean mIsConnected;
     private boolean mIsWifi;
+    private NetworkInfo mActiveNetwork;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,9 +30,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        mIsConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-        mIsWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+        mActiveNetwork = cm.getActiveNetworkInfo();
+        mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
+        mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
         if (mIsConnected && mIsWifi) {
             Toast.makeText(MainActivity.this, "Wifi Connected", Toast.LENGTH_LONG).show();
         }
@@ -68,12 +69,12 @@ public class MainActivity extends AppCompatActivity {
 
         private boolean mRunning = false;
 
+
         void Info (){
             if ( ! Thread.interrupted() && mRunning ){
                 String display= "\n Hello World" ;
                 if ( !Thread.interrupted() ){
-                    //Start Monte Carlo polling
-                    new DisplayTask().execute(display);
+                    new DisplayTask().execute("\n"+mActiveNetwork.toString());
                 }
 
             }
@@ -92,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context,Intent intent) {
             ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            mIsConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-            mIsWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+            mActiveNetwork = cm.getActiveNetworkInfo();
+            mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
+            mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
             if (mIsConnected && mIsWifi) {
                 new showTextThread("Wifi Connected").run();
             }
