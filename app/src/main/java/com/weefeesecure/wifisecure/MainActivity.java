@@ -1,5 +1,7 @@
 package com.weefeesecure.wifisecure;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -18,17 +20,19 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mOut;
     private InfoThread mThread;
+    private boolean mIsConnected;
+    private boolean mIsWifi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-        boolean isWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
-        if (isConnected && isWifi) {
+        mIsConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        mIsWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+        if (mIsConnected && mIsWifi) {
             Toast.makeText(MainActivity.this, "Wifi Connected", Toast.LENGTH_LONG).show();
         }
         else
@@ -80,10 +84,22 @@ public class MainActivity extends AppCompatActivity {
             mRunning = true;
             Info();
         }
-
         public void close() {
             mRunning = false;
         }
     }
-
+    protected class WifiStateChangeReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context,Intent intent) {
+            ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            mIsConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+            mIsWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+            if (mIsConnected && mIsWifi) {
+                Toast.makeText(context.getApplicationContext(), "Wifi Connected", Toast.LENGTH_LONG).show();
+            }
+            else
+                Toast.makeText(context.getApplicationContext(),"Wifi Not Connected", Toast.LENGTH_LONG).show();
+        }
+    }
 }
