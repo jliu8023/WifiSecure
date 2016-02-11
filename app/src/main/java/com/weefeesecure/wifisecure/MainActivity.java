@@ -1,5 +1,7 @@
 package com.weefeesecure.wifisecure;
 
+import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,6 +21,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent();
+        int WifiState = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
+        if (WifiState == WifiManager.WIFI_STATE_ENABLED){
+            Toast.makeText(MainActivity.this, "Wifi enabled", Toast.LENGTH_LONG).show();
+        }
+        else if (WifiState == WifiManager.WIFI_STATE_ENABLING){
+
+            Toast.makeText(MainActivity.this, "Wifi enabling", Toast.LENGTH_LONG).show();
+        }
+        else
+            Toast.makeText(MainActivity.this,"Wifi disabled", Toast.LENGTH_LONG).show();
+
     }
 
     //AsyncTask to display String given on TextView
