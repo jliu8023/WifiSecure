@@ -1,6 +1,8 @@
 package com.weefeesecure.wifisecure;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -21,18 +23,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Intent intent = new Intent();
-        int WifiState = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
-        if (WifiState == WifiManager.WIFI_STATE_ENABLED){
-            Toast.makeText(MainActivity.this, "Wifi enabled", Toast.LENGTH_LONG).show();
-        }
-        else if (WifiState == WifiManager.WIFI_STATE_ENABLING){
-
-            Toast.makeText(MainActivity.this, "Wifi enabling", Toast.LENGTH_LONG).show();
+        
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        boolean isWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+        if (isConnected && isWifi) {
+            Toast.makeText(MainActivity.this, "Wifi Connected", Toast.LENGTH_LONG).show();
         }
         else
-            Toast.makeText(MainActivity.this,"Wifi disabled", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this,"Wifi Not Connected", Toast.LENGTH_LONG).show();
 
     }
 
