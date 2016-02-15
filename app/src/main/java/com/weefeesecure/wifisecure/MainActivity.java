@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean mIsWifi;
     private NetworkInfo mActiveNetwork;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,17 +70,14 @@ public class MainActivity extends AppCompatActivity {
 
         private boolean mRunning = false;
 
-
         void Info (){
             if ( ! Thread.interrupted() && mRunning ){
-                String display= "\n Hello World" ;
                 if ( !Thread.interrupted() ){
                     new DisplayTask().execute("\n"+mActiveNetwork.toString());
                 }
 
             }
         }
-        //Override run() with Monte Carlo task
         @Override
         public void run(){
             mRunning = true;
@@ -89,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             mRunning = false;
         }
     }
+
     protected class WifiStateChangeReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context,Intent intent) {
