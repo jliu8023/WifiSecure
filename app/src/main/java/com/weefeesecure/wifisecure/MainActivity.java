@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.DhcpInfo;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -16,6 +17,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Formatter;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView mOut;
@@ -23,15 +26,19 @@ public class MainActivity extends AppCompatActivity {
     private boolean mIsConnected;
     private boolean mIsWifi;
     private NetworkInfo mActiveNetwork;
-
+    private ConnectivityManager mConMan;
+    private WifiManager mWFMan;
+    private DhcpInfo mDhcpInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        mActiveNetwork = cm.getActiveNetworkInfo();
+        mConMan = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        mWFMan = (WifiManager)getSystemService(WIFI_SERVICE);
+        mActiveNetwork = mConMan.getActiveNetworkInfo();
+        mDhcpInfo = mWFMan.getDhcpInfo();
         mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
         mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
         if (mIsConnected && mIsWifi) {
@@ -73,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         void Info (){
             if ( ! Thread.interrupted() && mRunning ){
                 if ( !Thread.interrupted() ){
-                    new DisplayTask().execute("\n"+mActiveNetwork.toString());
+                    new DisplayTask().execute("\n"+mActiveNetwork.toString()+"\n"+mDhcpInfo.toString());
                 }
 
             }
@@ -91,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
     protected class WifiStateChangeReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context,Intent intent) {
-            ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-            mActiveNetwork = cm.getActiveNetworkInfo();
+            mConMan = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+            mActiveNetwork = mConMan.getActiveNetworkInfo();
             mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
             mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
             if (mIsConnected && mIsWifi) {
