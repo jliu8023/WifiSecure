@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private ConnectivityManager mConMan;
     private WifiManager mWFMan;
     private DhcpInfo mDhcpInfo;
+    private WifiInfo mConInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         mWFMan = (WifiManager)getSystemService(WIFI_SERVICE);
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
+        mConInfo = mWFMan.getConnectionInfo();
         mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
         mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
         if (mIsConnected && mIsWifi) {
@@ -80,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
         void Info (){
             if ( ! Thread.interrupted() && mRunning ){
                 if ( !Thread.interrupted() ){
-                    new DisplayTask().execute("\n"+mActiveNetwork.toString()+"\n"+mDhcpInfo.toString());
+                    new DisplayTask().execute("\n"+mActiveNetwork.toString()+"\n\n"+mDhcpInfo.toString()
+                        + "\n\n" +mConInfo.toString());
                 }
-
             }
         }
         @Override
@@ -95,31 +98,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected class WifiStateChangeReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context,Intent intent) {
-            mConMan = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-            mActiveNetwork = mConMan.getActiveNetworkInfo();
-            mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
-            mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
-            if (mIsConnected && mIsWifi) {
-                new showTextThread("Wifi Connected").run();
-            }
-            else
-                new showTextThread("Wifi Not Connected").run();
-        }
-        protected class showTextThread extends Thread {
-            private String text;
-            showTextThread(String text) {
-                this.text = text;
-            };
-            private void showToastText() {
-                Toast.makeText(getApplicationContext(),text,Toast.LENGTH_LONG).show();
-            }
-            @Override
-            public void run() {
-                showToastText();
-            }
-        }
-    }
+//    protected class WifiStateChangeReceiver extends BroadcastReceiver {
+//        @Override
+//        public void onReceive(Context context,Intent intent) {
+//            mConMan = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+//            mActiveNetwork = mConMan.getActiveNetworkInfo();
+//            mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
+//            mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+//            if (mIsConnected && mIsWifi) {
+//                new showTextThread("Wifi Connected").run();
+//            }
+//            else
+//                new showTextThread("Wifi Not Connected").run();
+//        }
+//        protected class showTextThread extends Thread {
+//            private String text;
+//            showTextThread(String text) {
+//                this.text = text;
+//            };
+//            private void showToastText() {
+//                Toast.makeText(getApplicationContext(),text,Toast.LENGTH_LONG).show();
+//            }
+//            @Override
+//            public void run() {
+//                showToastText();
+//            }
+//        }
+//    }
 }
