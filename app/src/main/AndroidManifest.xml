@@ -7,11 +7,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
 
-    <!--Changes WiFi state and scan results-->
-    <!--
-    <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
-    <action android:name="android.net.wifi.SCAN_RESULTS"/>
-    -->
     <!--Permissions to access internet-->
     <uses-permission android:name="android.permission.INTERNET"/>
 
@@ -32,27 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!--
-            <receiver  android:name="WifiStateChangeReceiver">
-                <intent-filter>
-                    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-                    <action android:name="android.net.wifi.STATE_CHANGE"/>
-                </intent-filter>
-            </receiver>
-            -->
-
         </activity>
-        <!-- in order to access the WifiManage.getScanResults()  -->
-
-        <!--
-        <receiver
-            android:name="com.weefeesecure.wifisecure.MainActivity$WifiReceiver">
-            <intent-filter>
-                <action android:name="android.net.wifi.STATE_CHANGE"></action>
-                <action android:name="android.net.wifi.SCAN_RESULTS"></action>
-            </intent-filter>
-        </receiver>
-        -->
     </application>
 
 

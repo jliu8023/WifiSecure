@@ -34,10 +34,6 @@ import android.net.wifi.WifiManager;
 
 public class MainActivity extends AppCompatActivity {
 
-    /*
-    private TextView mOut;
-    private InfoThread mThread;
-
     private boolean mIsConnected;
     private boolean mIsWifi;
     private boolean mScanResultReady = false;
@@ -47,44 +43,44 @@ public class MainActivity extends AppCompatActivity {
 
     private DhcpInfo mDhcpInfo;
     private WifiInfo mConInfo;
-    */
 
+    private String mGateway;
+
+    private TextView mOut;
     private List<ScanResult> mScan;
-    private ListView mLV;
     private WifiManager mWFMan;
     WifiScanReceiver mWifiReceiver;
     String mWifis[];
-    String mSSID[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mLV = (ListView)findViewById(R.id.listView);
 
         mWFMan = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         mWifiReceiver = new WifiScanReceiver();
-        mWFMan.startScan();
 
-        /*
         mConMan = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
+        getDHCP();
         mConInfo = mWFMan.getConnectionInfo();
         mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
         mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
-        //mhandler.post(wifiRunnable);
-       // mScan = findWifi(mWFMan);
         if (mIsConnected && mIsWifi) {
             Toast.makeText(MainActivity.this, "Wifi Connected", Toast.LENGTH_LONG).show();
         }
         else
             Toast.makeText(MainActivity.this,"Wifi Not Connected", Toast.LENGTH_LONG).show();
-        */
+
 
     }
 
-    /*
+    private void getDHCP(){
+        String[] tokens = mDhcpInfo.toString().split(" ");
+        mGateway = tokens[3];
+    }
+
     //AsyncTask to display String given on TextView
     private class DisplayTask extends AsyncTask< String, Void, String> {
         protected String doInBackground(String... givenString){
@@ -104,70 +100,13 @@ public class MainActivity extends AppCompatActivity {
         //Enable scrolling in TextView for more results
         mOut.setMovementMethod(new ScrollingMovementMethod());
 
-        //Starting thread
-        mThread = new InfoThread();
-        mThread.start();
+        Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
+        mWFMan.startScan();
     }
-    */
-
-    /*
-    private class InfoThread extends Thread{
-        private boolean mRunning = false;
-
-        void Info (){
-            if ( ! Thread.interrupted() && mRunning ){
-                if ( !Thread.interrupted() ){
-
-                    if (mWifis[0] != null)
-                        //new DisplayTask().execute("\n" + mWifis[0] );
-                        new DisplayTask().execute("\n"+mActiveNetwork.toString()+
-                                "\n\n"+mDhcpInfo.toString() + "\n\n" +mConInfo.toString());
-                    else
-
-                        new DisplayTask().execute("\n"+mActiveNetwork.toString()+
-                                "\n\n"+mDhcpInfo.toString() + "\n\n" +mConInfo.toString());
-                }
-            }
-        }
-        @Override
-        public void run(){
-            mRunning = true;
-            Info();
-        }
-        public void close() {
-            mRunning = false;
-        }
-    }
-    */
-
-    /*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        //if (id == R.id.action_settings) {
-        //    return true;
-        //}
-        return super.onOptionsItemSelected(item);
-    }
-    */
-
-
 
     private class WifiScanReceiver extends BroadcastReceiver{
         public void onReceive(Context c, Intent intent) {
+
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
             mWifis = new String[wifiScanList.size()];
 
@@ -175,7 +114,10 @@ public class MainActivity extends AppCompatActivity {
                 mWifis[i] = ((wifiScanList.get(i)).SSID + '\n'
                         + (wifiScanList.get(i)).capabilities);
             }
-            mLV.setAdapter(new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,mWifis));
+            new DisplayTask().execute( mWifis[0]);
+            new DisplayTask().execute("\n\n" +  mDhcpInfo.toString());
+            new DisplayTask().execute("\n\n" + "Gateway: " +  mGateway);
+            Toast.makeText(MainActivity.this, "Scan Finish", Toast.LENGTH_LONG).show();
         }
     }
 
