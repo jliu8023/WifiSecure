@@ -94,6 +94,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    //AsyncTask to display String given on TextView
+    private class ClearTask extends AsyncTask< String, Void, String> {
+        protected String doInBackground(String... givenString){
+            return givenString[0];
+        }
+        //Appending TextView with new string
+        protected void onPostExecute( String outString ){
+            mOut = (TextView) findViewById(R.id.results);
+            mOut.setText("");
+        }
+    }
+
+
     public void startButton(View v){
         Button button = (Button) v;
         //Referencing EditText and TextView
@@ -104,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
+        new ClearTask().execute("");
         Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
         mWFMan.startScan();
     }
@@ -120,6 +134,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return found;
+    }
+
+    private String checkSecType(ScanResult result){
+        String advice = null;
+        if (result.capabilities.contains("WPA2-PSK")
+                ||result.capabilities.contains("WPA2-Personal")){
+            advice = "Security type is good";
+        }
+        else
+            advice = "The Security type should be WPA2";
+        return advice;
     }
 
     //Broadcast Receiver for finding available WiFi connections
@@ -146,6 +171,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             mScan = wifiScanList;
+
+            String advice = checkSecType(currentNetwork);
+            new DisplayTask().execute("\n\n" + advice);
 
             //Display gateway
             new DisplayTask().execute("\n\n" + "Gateway: " +  mGateway);
