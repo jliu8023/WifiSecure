@@ -118,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
         Button button = (Button) v;
         //Referencing EditText and TextView
         runScans();
-        new runJsoup().execute();
     }
 
     private class runJsoup extends AsyncTask<String, Void, String> {
@@ -168,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (!mWFMan.startScan())
             Toast.makeText(MainActivity.this, "Scan failed", Toast.LENGTH_LONG).show();
+
     }
 
     private ScanResult getCurrentWifi(List<ScanResult> scanList){
@@ -273,6 +273,8 @@ public class MainActivity extends AppCompatActivity {
 
             advice = getDHCPStr();
             new DisplayTask().execute("\n\n" + "\n\n" + advice);
+
+            new runJsoup().execute();
 
             Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
         }
