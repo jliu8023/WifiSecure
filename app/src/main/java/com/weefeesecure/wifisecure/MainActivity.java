@@ -1,15 +1,20 @@
 package com.weefeesecure.wifisecure;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiConfiguration;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -32,8 +37,18 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import android.util.Base64;
+
 public class MainActivity extends AppCompatActivity {
 
+    final private int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 255;
     private boolean mIsConnected;
     private boolean mIsWifi;
     private boolean mScanResultReady = false;
@@ -97,6 +112,39 @@ public class MainActivity extends AppCompatActivity {
     public void startButton(View v){
         Button button = (Button) v;
         //Referencing EditText and TextView
+        runScans();
+        new runJsoup().execute();
+    }
+
+    private class runJsoup extends AsyncTask<String, Void, String> {
+        private String result;
+        private String encodedAuth;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            try {
+                // Connect to the web site
+                encodedAuth = Base64.encodeToString("admin:password".getBytes(),Base64.DEFAULT);
+                Document document = Jsoup.connect("http://"+mGateway).header("Authentication",encodedAuth).get();
+                // Get the html document title
+                result = document.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute( String outString ){
+            if (result != null)
+                new DisplayTask().execute("\n\n"+outString);
+            else
+                new DisplayTask().execute("\n\n"+"could not connect to router settings");
+        }
+    }
+
+    private void runScans() {
         mOut = (TextView) findViewById(R.id.results);
         //Enable scrolling in TextView for more results
         mOut.setMovementMethod(new ScrollingMovementMethod());
@@ -105,7 +153,15 @@ public class MainActivity extends AppCompatActivity {
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
         Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
-        mWFMan.startScan();
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_CALENDAR);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+        if (!mWFMan.startScan())
+            Toast.makeText(MainActivity.this, "Scan failed", Toast.LENGTH_LONG).show();
     }
 
     private ScanResult getCurrentWifi(List<ScanResult> scanList){
@@ -127,8 +183,10 @@ public class MainActivity extends AppCompatActivity {
         //Method to run when receiving scan
         public void onReceive(Context c, Intent intent) {
 
+
             //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
+            //new DisplayTask().execute("\n\n"+Integer.toString(wifiScanList.size())); //checking scan result size
             mWifis = new String[wifiScanList.size()];
 
             //Obtaining relevant info from ScanResults
@@ -148,9 +206,10 @@ public class MainActivity extends AppCompatActivity {
             mScan = wifiScanList;
 
             //Display gateway
-            new DisplayTask().execute("\n\n" + "Gateway: " +  mGateway);
+            new DisplayTask().execute("\n\n" + "Gateway: ");
+            new DisplayTask().execute(Html.fromHtml("<html><a href=\"http://" + mGateway + "\">" + mGateway + "</a></html>").toString());
 
-            Toast.makeText(MainActivity.this, "Scan Finish", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -162,6 +221,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         super.onResume();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //runScans();
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }
 
