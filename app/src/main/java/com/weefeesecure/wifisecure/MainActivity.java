@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // Connect to the web site
                 encodedAuth = Base64.encodeToString("admin:password".getBytes(),Base64.DEFAULT);
-                Document document = Jsoup.connect("http://" + mInfo[2]).header("Authentication",encodedAuth).get();
+                Document document = Jsoup.connect("http://" + mInfo[2]).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36").header("Authentication",encodedAuth).get();
                 // Get the html document title
                 result = document.toString();
             } catch (IOException e) {
@@ -237,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
         //Method to run when receiving scan
         public void onReceive(Context c, Intent intent) {
 
+            new ClearTask().execute("");
 
             //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
