@@ -51,20 +51,19 @@ public class MainActivity extends AppCompatActivity {
     final private int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 255;
     private boolean mIsConnected;
     private boolean mIsWifi;
-    private boolean mScanResultReady = false;
+
     private NetworkInfo mActiveNetwork;
     private ConnectivityManager mConMan;
 
     private DhcpInfo mDhcpInfo;
     private WifiInfo mConInfo;
 
-    private String mGateway;
-
     private TextView mOut;
     private List<ScanResult> mScan;
     private WifiManager mWFMan;
     WifiScanReceiver mWifiReceiver;
     String mWifis[];
+    String mInfo[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
         mConMan = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
-        getDHCP();
         mConInfo = mWFMan.getConnectionInfo();
         mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
         mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
@@ -90,12 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //Parsing DHCP info for relevant info
-    private void getDHCP(){
-        String[] tokens = mDhcpInfo.toString().split(" ");
-        mGateway = tokens[3];
-    }
-
     //AsyncTask to display String given on TextView
     private class DisplayTask extends AsyncTask< String, Void, String> {
         protected String doInBackground(String... givenString){
@@ -105,6 +97,19 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute( String outString ){
             mOut = (TextView) findViewById(R.id.results);
             mOut.append(outString);
+        }
+    }
+
+
+    //AsyncTask to display String given on TextView
+    private class ClearTask extends AsyncTask< String, Void, String> {
+        protected String doInBackground(String... givenString){
+            return givenString[0];
+        }
+        //Appending TextView with new string
+        protected void onPostExecute( String outString ){
+            mOut = (TextView) findViewById(R.id.results);
+            mOut.setText("");
         }
     }
 
@@ -126,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 // Connect to the web site
                 encodedAuth = Base64.encodeToString("admin:password".getBytes(),Base64.DEFAULT);
-                Document document = Jsoup.connect("http://"+mGateway).header("Authentication",encodedAuth).get();
+                Document document = Jsoup.connect("http://" + mInfo[2]).header("Authentication",encodedAuth).get();
                 // Get the html document title
                 result = document.toString();
             } catch (IOException e) {
@@ -148,10 +153,11 @@ public class MainActivity extends AppCompatActivity {
         mOut = (TextView) findViewById(R.id.results);
         //Enable scrolling in TextView for more results
         mOut.setMovementMethod(new ScrollingMovementMethod());
-        //Show user that app is starting scan
+
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
+        new ClearTask().execute("");
         Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
         int permissionCheck = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_CALENDAR);
@@ -178,6 +184,54 @@ public class MainActivity extends AppCompatActivity {
         return found;
     }
 
+    private String checkSecType(ScanResult result){
+        String advice = null;
+        if ((result.capabilities.contains("WPA2")
+                ||result.capabilities.contains("WPA2-Personal"))
+                && !result.capabilities.contains("TKIP")){
+            advice = "Security type is good";
+        }
+        else
+            advice = "The Security type should be WPA2 + AES";
+        return advice;
+    }
+
+    //Parsing DHCP info for relevant info
+    private String getDHCPStr(){
+        String ans = null;
+        mInfo = new String[6];
+        String given[] = mDhcpInfo.toString().split(" ");
+        mInfo[0] = given[1]; // Ip Address
+        mInfo[1] = given[5]; // Subnet Mask
+        mInfo[2] = given[3]; // Gateway
+        mInfo[3] = given[12]; // DHCP Server
+        mInfo[4] = given[7]; // DNS Server 1
+        mInfo[5] = given[9]; // DNS Server 2
+        ans = "IP Address" + "\t\t" + given[1] ;
+        ans +=  "\n\n" + "Subnet Mask" + "\t\t" + given[5];
+        ans +=  "\n\n" + "Gateway" + Html.fromHtml("<html><a href=\"http://" + given[3] + "\">" + given[3] + "</a></html>").toString() + "\t\t";
+        ans +=  "\n\n" + "DHCP Server" + "\t\t" + given[12];
+        ans +=  "\n\n" + "DNS Server 1" + "\t\t" + given[7];
+        ans +=  "\n\n" + "DNS Server 2" + "\t\t" + given[9];
+        return ans;
+    }
+
+    private String readCapabilities(String given){
+        String found = "Unidentified Security type";
+        if (given.contains("WPA")){
+            found = "WPA";
+            if (given.contains("WPA2"))
+                found += "/WPA2";
+        }
+        else if (given.contains("WEP"))
+            found = "WEP";
+        if (given.contains("TKIP"))
+            found += " + TKIP";
+        if (given.contains("AES"))
+            found += " + AES";
+        return found;
+    }
+
     //Broadcast Receiver for finding available WiFi connections
     private class WifiScanReceiver extends BroadcastReceiver{
         //Method to run when receiving scan
@@ -199,15 +253,26 @@ public class MainActivity extends AppCompatActivity {
 
             ScanResult currentNetwork = getCurrentWifi(wifiScanList);
             if (currentNetwork != null){
-                String wifiStr = "\n\n" + currentNetwork.SSID + '\n' + currentNetwork.capabilities;
+                String wifiStr = "\n\n" + currentNetwork.SSID
+                        + '\n' + readCapabilities(currentNetwork.capabilities);
                 new DisplayTask().execute(wifiStr);
             }
 
             mScan = wifiScanList;
 
+            String advice = checkSecType(currentNetwork);
+            new DisplayTask().execute("\n\n" + advice);
+
+            /*
+            new DisplayTask().execute("\n\n" + mDhcpInfo.toString());
+            new DisplayTask().execute("\n\n" + mActiveNetwork.toString());
+            new DisplayTask().execute("\n\n" + mConInfo.toString());
+            */
+
             //Display gateway
-            new DisplayTask().execute("\n\n" + "Gateway: ");
-            new DisplayTask().execute(Html.fromHtml("<html><a href=\"http://" + mGateway + "\">" + mGateway + "</a></html>").toString());
+
+            advice = getDHCPStr();
+            new DisplayTask().execute("\n\n" + "\n\n" + advice);
 
             Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
         }
