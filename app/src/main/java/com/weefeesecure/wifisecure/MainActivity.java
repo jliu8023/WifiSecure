@@ -151,12 +151,12 @@ public class MainActivity extends AppCompatActivity {
         mInfo[3] = given[12]; // DHCP Server
         mInfo[4] = given[7]; // DNS Server 1
         mInfo[5] = given[9]; // DNS Server 2
-        ans = "IP Address" + "\t\t" + given[1] ;
-        ans +=  "\n\n" + "Subnet Mask" + "\t\t" + given[5];
-        ans +=  "\n\n" + "Gateway" + "\t\t" + given[3];
-        ans +=  "\n\n" + "DHCP Server" + "\t\t" + given[12];
-        ans +=  "\n\n" + "DNS Server 1" + "\t\t" + given[7];
-        ans +=  "\n\n" + "DNS Server 2" + "\t\t" + given[9];
+        ans = "IP Address:" + "\t\t" + given[1] ;
+        ans +=  "\n\n" + "Subnet Mask:" + "\t\t" + given[5];
+        ans +=  "\n\n" + "Gateway:" + "\t\t" + given[3];
+        ans +=  "\n\n" + "DHCP Server:" + "\t\t" + given[12];
+        ans +=  "\n\n" + "DNS Server 1:" + "\t\t" + given[7];
+        ans +=  "\n\n" + "DNS Server 2:" + "\t\t" + given[9];
         return ans;
     }
 
