@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
             ScanResult currentNetwork = getCurrentWifi(wifiScanList);
             if (currentNetwork != null){
-                String wifiStr = '\n' + currentNetwork.SSID + '\n' + currentNetwork.capabilities;
+                String wifiStr = "\n\n" + currentNetwork.SSID + '\n' + currentNetwork.capabilities;
                 new DisplayTask().execute(wifiStr);
             }
 
