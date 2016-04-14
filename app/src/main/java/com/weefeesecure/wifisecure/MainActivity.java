@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean mIsConnected;
     private boolean mIsWifi;
     private boolean mScanResultReady = false;
-
     private NetworkInfo mActiveNetwork;
     private ConnectivityManager mConMan;
 
@@ -76,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Parsing DHCP info for relevant info
     private void getDHCP(){
         String[] tokens = mDhcpInfo.toString().split(" ");
         mGateway = tokens[3];
@@ -86,12 +86,13 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... givenString){
             return givenString[0];
         }
-
+        //Appending TextView with new string
         protected void onPostExecute( String outString ){
             mOut = (TextView) findViewById(R.id.results);
             mOut.append(outString);
         }
     }
+
 
     public void startButton(View v){
         Button button = (Button) v;
@@ -99,24 +100,56 @@ public class MainActivity extends AppCompatActivity {
         mOut = (TextView) findViewById(R.id.results);
         //Enable scrolling in TextView for more results
         mOut.setMovementMethod(new ScrollingMovementMethod());
-
+        //Show user that app is starting scan
+        mActiveNetwork = mConMan.getActiveNetworkInfo();
+        mDhcpInfo = mWFMan.getDhcpInfo();
+        mConInfo = mWFMan.getConnectionInfo();
         Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
         mWFMan.startScan();
     }
 
+    private ScanResult getCurrentWifi(List<ScanResult> scanList){
+        ScanResult found = null;
+        if (scanList != null){
+            for (ScanResult currentNetwork : scanList){
+                //new DisplayTask().execute("\n\n" + currentNetwork.SSID);
+                if (mConInfo.getSSID().contains(currentNetwork.SSID)){
+                    found = currentNetwork;
+                    break;
+                }
+            }
+        }
+        return found;
+    }
+
+    //Broadcast Receiver for finding available WiFi connections
     private class WifiScanReceiver extends BroadcastReceiver{
+        //Method to run when receiving scan
         public void onReceive(Context c, Intent intent) {
 
+            //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
             mWifis = new String[wifiScanList.size()];
 
+            //Obtaining relevant info from ScanResults
             for(int i = 0; i < wifiScanList.size(); i++){
-                mWifis[i] = ((wifiScanList.get(i)).SSID + '\n'
-                        + (wifiScanList.get(i)).capabilities);
+                mWifis[i] = ((wifiScanList.get(i)).SSID + '\n' );
             }
-            new DisplayTask().execute( mWifis[0]);
-            new DisplayTask().execute("\n\n" +  mDhcpInfo.toString());
+
+            //Display ScanResult info
+            //new DisplayTask().execute( mWifis[0]);
+
+            ScanResult currentNetwork = getCurrentWifi(wifiScanList);
+            if (currentNetwork != null){
+                String wifiStr = '\n' + currentNetwork.SSID + '\n' + currentNetwork.capabilities;
+                new DisplayTask().execute(wifiStr);
+            }
+
+            mScan = wifiScanList;
+
+            //Display gateway
             new DisplayTask().execute("\n\n" + "Gateway: " +  mGateway);
+
             Toast.makeText(MainActivity.this, "Scan Finish", Toast.LENGTH_LONG).show();
         }
     }
