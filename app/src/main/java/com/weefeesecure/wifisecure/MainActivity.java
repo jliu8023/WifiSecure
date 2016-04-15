@@ -1,6 +1,7 @@
 package com.weefeesecure.wifisecure;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -12,7 +13,6 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
@@ -46,7 +46,7 @@ import java.io.InputStream;
 
 import android.util.Base64;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     final private int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 255;
     private boolean mIsConnected;
