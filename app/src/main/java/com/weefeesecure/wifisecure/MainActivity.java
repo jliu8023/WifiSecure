@@ -209,7 +209,8 @@ public class MainActivity extends Activity {
         mInfo[5] = given[9]; // DNS Server 2
         ans = "IP Address" + "\t\t" + given[1] ;
         ans +=  "\n\n" + "Subnet Mask" + "\t\t" + given[5];
-        ans +=  "\n\n" + "Gateway" + Html.fromHtml("<html><a href=\"http://" + given[3] + "\">" + given[3] + "</a></html>").toString() + "\t\t";
+        ans +=  "\n\n" + "Gateway" + Html.fromHtml("<html><a href=\"http://"
+                + given[3] + "\">" + given[3] + "</a></html>").toString() + "\t\t";
         ans +=  "\n\n" + "DHCP Server" + "\t\t" + given[12];
         ans +=  "\n\n" + "DNS Server 1" + "\t\t" + given[7];
         ans +=  "\n\n" + "DNS Server 2" + "\t\t" + given[9];
@@ -241,7 +242,8 @@ public class MainActivity extends Activity {
 
             //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
-            //new DisplayTask().execute("\n\n"+Integer.toString(wifiScanList.size())); //checking scan result size
+            // checking scan result size
+            //new DisplayTask().execute("\n\n"+Integer.toString(wifiScanList.size()));
             mWifis = new String[wifiScanList.size()];
 
             //Obtaining relevant info from ScanResults
