@@ -1,6 +1,7 @@
 package com.weefeesecure.wifisecure;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,10 +11,17 @@ import android.net.wifi.WifiConfiguration;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -38,6 +46,9 @@ import android.net.NetworkInfo.State;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.DefaultItemAnimator;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -69,10 +80,37 @@ public class MainActivity extends AppCompatActivity {
     private String mWifis[];
     private String mInfo[];
 
+    private List<Info> infoList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private InfoAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        recyclerView = (RecyclerView) findViewById(R.id.main_recycler);
+
+        mAdapter = new InfoAdapter(infoList);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(mAdapter);
+
+        createInfo();
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Snackbar.make(v, "Moar To Come!",
+                        Snackbar.LENGTH_LONG).show();
+            }
+        });
 
         mWFMan = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         mWifiReceiver = new WifiScanReceiver();
@@ -94,6 +132,36 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void createInfo() {
+        Info info = new Info("title","description","detailed description");
+        infoList.add(info);
+
+        info = new Info("Wifi Encryption Type","WPA2-Personal","bunch of stuff not seen now");
+        infoList.add(info);
+
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_start) {
+            runScans();
+        };
+        return super.onOptionsItemSelected(item);
+    }
+
     //AsyncTask to display String given on TextView
     private class DisplayTask extends AsyncTask< String, Void, String> {
         protected String doInBackground(String... givenString){
@@ -101,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //Appending TextView with new string
         protected void onPostExecute( String outString ){
-            mOut = (TextView) findViewById(R.id.results);
+            mOut = (TextView) findViewById(R.id.results_description);
             mOut.append(outString);
         }
     }
@@ -114,20 +182,13 @@ public class MainActivity extends AppCompatActivity {
         }
         //Appending TextView with new string
         protected void onPostExecute( String outString ){
-            mOut = (TextView) findViewById(R.id.results);
+            mOut = (TextView) findViewById(R.id.results_description);
             mOut.setText("");
         }
     }
 
-
-    public void startButton(View v){
-        Button button = (Button) v;
-        runScans();
-    }
-
     private class runJsoup extends AsyncTask<String, Void, String> {
         private String result;
-        private String encodedAuth;
 
         @Override
         protected String doInBackground(String... params) {
@@ -153,16 +214,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runScans() {
-        //Referencing EditText and TextView
-        mOut = (TextView) findViewById(R.id.results);
-        //Enable scrolling in TextView for more results
-        mOut.setMovementMethod(new ScrollingMovementMethod());
 
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
 
-        new ClearTask().execute("");
         Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
         int permissionCheck = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_CALENDAR);
@@ -215,7 +271,8 @@ public class MainActivity extends AppCompatActivity {
         mInfo[5] = given[9]; // DNS Server 2
         ans = "IP Address" + "\t\t" + given[1] ;
         ans +=  "\n\n" + "Subnet Mask" + "\t\t" + given[5];
-        ans +=  "\n\n" + "Gateway" + Html.fromHtml("<html><a href=\"http://" + given[3] + "\">" + given[3] + "</a></html>").toString() + "\t\t";
+        ans +=  "\n\n" + "Gateway" + Html.fromHtml("<html><a href=\"http://"
+                + given[3] + "\">" + given[3] + "</a></html>").toString() + "\t\t";
         ans +=  "\n\n" + "DHCP Server" + "\t\t" + given[12];
         ans +=  "\n\n" + "DNS Server 1" + "\t\t" + given[7];
         ans +=  "\n\n" + "DNS Server 2" + "\t\t" + given[9];
@@ -227,11 +284,10 @@ public class MainActivity extends AppCompatActivity {
         //Method to run when receiving scan
         public void onReceive(Context c, Intent intent) {
 
-            new ClearTask().execute("");
-
             //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
-            //new DisplayTask().execute("\n\n"+Integer.toString(wifiScanList.size())); //checking scan result size
+            // checking scan result size
+            //new DisplayTask().execute("\n\n"+Integer.toString(wifiScanList.size()));
             mWifis = new String[wifiScanList.size()];
 
             //Obtaining relevant info from ScanResults
