@@ -12,12 +12,12 @@ public class WifiAdivisor {
 
     //Secure settings
     final private String[] mApprSecTypes = {"WPA2"};
-    final private String[] mApprEncTypes = {"CCMP", "AES"};
-    final private String[] mSecSets ={"n/a"};
+    final private String[] mApprEncTypes = {"CCMP", "AES", "PERSONAL"};
+    final private String[] mSecSets ={"ESS"};
 
     //Unsecure settings
     final private String[] mDisaSecTypes = {"WEP", "WPA-"};
-    final private String[] mDisaEncTypes = {"TKIP"};
+    final private String[] mDisaEncTypes = {"TKIP", "ENTERPRISE"};
     final private String[] mUnsecSets = {"WPS"};
 
     //Constructor needs a ScanResult
@@ -30,6 +30,8 @@ public class WifiAdivisor {
         String found = mCapabilities.replaceAll("\\[","");
         return found.split("\\]");
     }
+
+    public boolean isNotNull() {return mGivenScan != null;};
 
     //Compares list of enabled secure settings to unsecure settings
     public boolean isSecure(){

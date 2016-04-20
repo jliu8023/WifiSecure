@@ -8,9 +8,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by Jinchi on 4/20/2016.
- */
 public class InfoAdapter extends RecyclerView.Adapter<InfoAdapter.MyViewHolder> {
     private List<Info> infoList;
 

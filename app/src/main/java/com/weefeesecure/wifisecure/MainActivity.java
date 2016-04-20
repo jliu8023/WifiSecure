@@ -84,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private InfoAdapter mAdapter;
 
+    private WifiAdivisor mAdv;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,14 +103,14 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(mAdapter);
 
-        createInfo();
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar.make(v, "Moar To Come!",
-                        Snackbar.LENGTH_LONG).show();
+                if (mAdv != null) {
+                    Snackbar.make(v, "Your router is located within "+mAdv.getDist()+" meters.",
+                            Snackbar.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -132,16 +134,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void createInfo() {
-        Info info = new Info("title","description","detailed description");
-        infoList.add(info);
-
-        info = new Info("Wifi Encryption Type","WPA2-Personal","bunch of stuff not seen now");
-        infoList.add(info);
-
-        mAdapter.notifyDataSetChanged();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -157,9 +149,17 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start) {
+            infoList.clear();
+            mAdapter.notifyDataSetChanged();
             runScans();
         };
         return super.onOptionsItemSelected(item);
+    }
+
+    private void addInfo(String title, String description, String detailedDescription) {
+        Info info = new Info(title,description,detailedDescription);
+        infoList.add(info);
+        mAdapter.notifyDataSetChanged();
     }
 
     //AsyncTask to display String given on TextView
@@ -206,10 +206,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute( String outString ){
-            if (result != null)
-                new DisplayTask().execute("\n\n"+outString);
+            if (outString != null)
+                addInfo("HNAP1 enabled:","true",outString);
             else
-                new DisplayTask().execute("\n\n"+"Your router is HNAP1 safe");
+                addInfo("HNAP1 enabled:","false","Your router is HNAP1 safe");
         }
     }
 
@@ -279,6 +279,14 @@ public class MainActivity extends AppCompatActivity {
         return ans;
     }
 
+    private String stringArrayToString(String[] arr) {
+        String res = "";
+        for (int i=0;i<arr.length;++i) {
+            res = res + arr[i] + "\n";
+        }
+        return res;
+    }
+
     //Broadcast Receiver for finding available WiFi connections
     private class WifiScanReceiver extends BroadcastReceiver{
         //Method to run when receiving scan
@@ -299,52 +307,49 @@ public class MainActivity extends AppCompatActivity {
             //new DisplayTask().execute( mWifis[0]);
 
             ScanResult currentNetwork = getCurrentWifi(wifiScanList);
+
             if (currentNetwork != null){
-                String wifiStr = "\n\n" + currentNetwork.SSID
-                        + "\n\n" + currentNetwork.capabilities.toString();
-                new DisplayTask().execute(wifiStr);
 
-                WifiAdivisor adv = new WifiAdivisor(currentNetwork);
+                addInfo("Current Network:",currentNetwork.SSID,currentNetwork.capabilities);
 
-                String[] cap = adv.getCap();
-                new DisplayTask().execute("\n\n" + "Found capabilities: ");
-                for (int x = 0; x < cap.length; x++){
-                    new DisplayTask().execute("\n" + cap[x]);
-                }
+                mAdv = new WifiAdivisor(currentNetwork);
 
-                new DisplayTask().execute("\n\n" + "Secured? " + adv.isSecure());
+                String[] cap = mAdv.getCap();
 
-                new DisplayTask().execute("\n\n" + "Security check: " + adv.isSecAppr());
-                new DisplayTask().execute("\n\n" + "Encryption check: " + adv.isEncAppr());
-                new DisplayTask().execute("\n\n" + "Settings: " + adv.isSetAppr());
+                addInfo("Connection Security:",""+mAdv.isSecure(),"Here are all the connection capabilities " +
+                        "open on your router right now:\n" + stringArrayToString(cap));
 
-                if (adv.isKnown()) {
+//                new DisplayTask().execute("\n\n" + "Security check: " + mAdv.isSecAppr());
+//                new DisplayTask().execute("\n\n" + "Encryption check: " + mAdv.isEncAppr());
+//                new DisplayTask().execute("\n\n" + "Settings: " + mAdv.isSetAppr());
+
+/*                if (mAdv.isKnown()) {
                     new DisplayTask().execute("\n\n" + "Enabled:");
-                    ArrayList<String> enabled = adv.enSecTypes();
+                    ArrayList<String> enabled = mAdv.enSecTypes();
                     if (!enabled.isEmpty()) {
                         for (int x = 0; x < enabled.size(); x++) {
                             new DisplayTask().execute("\n" + enabled.get(x));
                         }
                     }
 
-                    enabled = adv.enEncTypes();
+                    enabled = mAdv.enEncTypes();
                     if (!enabled.isEmpty()) {
                         for (int x = 0; x < enabled.size(); x++) {
                             new DisplayTask().execute("\n" + enabled.get(x));
                         }
                     }
 
-                    enabled = adv.enSet();
+                    enabled = mAdv.enSet();
                     if (!enabled.isEmpty()) {
                         for (int x = 0; x < enabled.size(); x++) {
                             new DisplayTask().execute("\n" + enabled.get(x));
                         }
                     }
-                }
+                }*/
 
             }
 
-            mScan = wifiScanList;
+/*            mScan = wifiScanList;
 
 
             String advice = checkSecType(currentNetwork);
@@ -358,9 +363,9 @@ public class MainActivity extends AppCompatActivity {
 
             //Display gateway
 
-            advice = getDHCPStr();
-            new DisplayTask().execute("\n\n" + "\n\n" + advice);
 
+            new DisplayTask().execute("\n\n" + "\n\n" + advice);*/
+            String advice = getDHCPStr();
             new runJsoup().execute();
 
             Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
