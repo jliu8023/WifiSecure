@@ -26,6 +26,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
 
@@ -260,15 +262,41 @@ public class MainActivity extends AppCompatActivity {
                         + "\n\n" + currentNetwork.capabilities.toString()
                         + "\n\n" + readCapabilities(currentNetwork.capabilities);
                 new DisplayTask().execute(wifiStr);
+
+                WifiAdivisor adv = new WifiAdivisor(currentNetwork);
+                new DisplayTask().execute("\n\n" + "Secured? " + adv.isSecure());
+
+                if (adv.isKnown()) {
+                    new DisplayTask().execute("\n\n" + "Enabled:");
+                    ArrayList<String> enabled = adv.enSecTypes();
+                    if (!enabled.isEmpty()) {
+                        for (int x = 0; x < enabled.size(); x++) {
+                            new DisplayTask().execute("\n" + enabled.get(x));
+                        }
+                    }
+
+                    enabled = adv.enEncTypes();
+                    if (!enabled.isEmpty()) {
+                        for (int x = 0; x < enabled.size(); x++) {
+                            new DisplayTask().execute("\n" + enabled.get(x));
+                        }
+                    }
+
+                    enabled = adv.enSet();
+                    if (!enabled.isEmpty()) {
+                        for (int x = 0; x < enabled.size(); x++) {
+                            new DisplayTask().execute("\n" + enabled.get(x));
+                        }
+                    }
+                }
+
             }
 
             mScan = wifiScanList;
 
-            WifiAdivisor adv = new WifiAdivisor(currentNetwork);
+
             String advice = checkSecType(currentNetwork);
             new DisplayTask().execute("\n\n" + advice);
-
-            new DisplayTask().execute("\n\n" + adv.isSecure() + " meters away");
 
             new DisplayTask().execute("\n\n" + currentNetwork.toString());
             new DisplayTask().execute("\n\n" + mDhcpInfo.toString());
