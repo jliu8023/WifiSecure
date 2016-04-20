@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView mOut;
     private List<ScanResult> mScan;
     private WifiManager mWFMan;
-    WifiScanReceiver mWifiReceiver;
-    String mWifis[];
-    String mInfo[];
+    private WifiScanReceiver mWifiReceiver;
+    private String mWifis[];
+    private String mInfo[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void startButton(View v){
         Button button = (Button) v;
-
         runScans();
     }
 
@@ -266,6 +265,10 @@ public class MainActivity extends AppCompatActivity {
                 WifiAdivisor adv = new WifiAdivisor(currentNetwork);
                 new DisplayTask().execute("\n\n" + "Secured? " + adv.isSecure());
 
+                new DisplayTask().execute("\n\n" + "Security check: " + adv.isSecAppr());
+                new DisplayTask().execute("\n\n" + "Encryption check: " + adv.isEncAppr());
+                new DisplayTask().execute("\n\n" + "Settings: " + adv.isSetAppr());
+
                 if (adv.isKnown()) {
                     new DisplayTask().execute("\n\n" + "Enabled:");
                     ArrayList<String> enabled = adv.enSecTypes();
@@ -296,8 +299,8 @@ public class MainActivity extends AppCompatActivity {
 
 
             String advice = checkSecType(currentNetwork);
-            new DisplayTask().execute("\n\n" + advice);
 
+            new DisplayTask().execute("\n\n" + advice);
             new DisplayTask().execute("\n\n" + currentNetwork.toString());
             new DisplayTask().execute("\n\n" + mDhcpInfo.toString());
             new DisplayTask().execute("\n\n" + mActiveNetwork.toString());

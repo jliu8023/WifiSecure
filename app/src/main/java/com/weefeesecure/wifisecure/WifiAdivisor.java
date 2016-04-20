@@ -28,11 +28,25 @@ public class WifiAdivisor {
 
     //Compares list of enabled secure settings to unsecure settings
     public boolean isSecure(){
-        return (isTypeSec() && !isTypeUnsec());
+        return (isSecAppr() && isEncAppr() && isSetAppr());
     }
 
+    //Checks if known settings are found
     public boolean isKnown(){
         return (isTypeSec() || isTypeUnsec());
+    }
+
+    //Checks for each approved type
+    public boolean isSecAppr(){
+        return (checkList(mApprSecTypes) && !checkList(mDisaSecTypes));
+    }
+
+    public boolean isEncAppr(){
+        return (checkList(mApprEncTypes) && !checkList(mDisaEncTypes));
+    }
+
+    public boolean isSetAppr(){
+        return (checkList(mSecSets) && !checkList(mUnsecSets));
     }
 
     //Update ScanResult
@@ -58,6 +72,19 @@ public class WifiAdivisor {
         return enList(mSecSets, mUnsecSets);
     }
 
+    //Get methods for accepted settings
+    public String[] getAccpSec(){
+        return mApprSecTypes;
+    }
+
+    public String[] getAccEnc(){
+        return mApprEncTypes;
+    }
+
+    public String[] getAccSet(){
+        return mSecSets;
+    }
+
     //Return distance from router in the form of "##.##"
     public String getDist(){
         return new DecimalFormat("##.##").format(calcDist());
@@ -70,25 +97,18 @@ public class WifiAdivisor {
 
     //Check if an approved security and encryption type is used
     private boolean isTypeSec(){
-        return checkList(mApprSecTypes, mApprEncTypes, mSecSets);
+        boolean secCheck = checkList(mApprSecTypes);
+        boolean encCheck = checkList(mApprEncTypes);
+        boolean setCheck = checkList(mSecSets);
+        return (secCheck && encCheck && setCheck);
     }
 
-    /*
-    //Truncate string arrays
-    private String[] trunStr(String[] given1, String[] given2){
-        String[] newStr = new String[given1.length + mUnsecSets.length];
-        for (int x = 0; x < newStr.length; x++){
-            if (x < given1.length)
-                newStr[x] = given1[x];
-            else if ((x - given1.length) < given2.length )
-                newStr[x - given1.length] = given2[x - given1.length];
-        }
-        return newStr;
-    }
-    */
     //Check if a unsecured security and encryption type is used
     private boolean isTypeUnsec(){
-        return checkList(mDisaSecTypes, mDisaEncTypes, mUnsecSets);
+        boolean secCheck = checkList(mDisaSecTypes);
+        boolean encCheck = checkList(mDisaEncTypes);
+        boolean setCheck = checkList(mUnsecSets);
+        return (secCheck && encCheck && setCheck);
     }
 
     //Find enabled features out of given list
@@ -113,34 +133,18 @@ public class WifiAdivisor {
     }
 
 
-    //Private method for checking security and encryption types list
-    private boolean checkList(String[] secList, String[] encList, String[] setList){
-        boolean secCheck = false;
-        boolean encCheck = false;
-        boolean setCheck = false;
+    //Private method for checking security, encryption, and setting types list
+    private boolean checkList(String[] list){
+        boolean check = false;
 
-        for (int x = 0; x < secList.length; x++){
-            if (isEnabled(secList[x])){
-                secCheck = true;
+        for (int x = 0; x < list.length; x++){
+            if (isEnabled(list[x])){
+                check = true;
                 break;
             }
         }
 
-        for (int x = 0; x < encList.length; x++){
-            if (isEnabled(encList[x])){
-                encCheck = true;
-                break;
-            }
-        }
-
-        for (int x = 0; x < setList.length; x++){
-            if (isEnabled(setList[x])){
-                setCheck = true;
-                break;
-            }
-        }
-
-        return (secCheck && encCheck && setCheck);
+        return check;
     }
 
     /*
