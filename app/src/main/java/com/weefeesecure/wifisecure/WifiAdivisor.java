@@ -1,5 +1,6 @@
 package com.weefeesecure.wifisecure;
 
+import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
 import java.lang.Math;
 import java.text.DecimalFormat;
@@ -9,6 +10,7 @@ public class WifiAdivisor {
 
     private ScanResult mGivenScan;
     private String mCapabilities;
+    private String[] mInfo = new String[6];
 
     //Secure settings
     final private String[] mApprSecTypes = {"WPA2"};
@@ -65,6 +67,24 @@ public class WifiAdivisor {
     public String getSSID(){
         return mGivenScan.SSID;
     }
+
+    //Get Ip
+    public String getIP() { return mInfo[0]; }
+
+    //Get Subnet
+    public String getSubnet() { return mInfo[1]; }
+
+    //Get Gateway
+    public String getGateway() { return mInfo[2]; }
+
+    //Get DHCP Server
+    public String getDHCPServer() { return mInfo[3]; }
+
+    //Get DNS 1
+    public String getDNS1() { return mInfo[4]; }
+
+    //Get DNS 2
+    public String getDNS2() { return mInfo[5]; }
 
     //Methods to find enabled settings off of list
     public ArrayList<String> enSecTypes(){
@@ -152,6 +172,20 @@ public class WifiAdivisor {
         }
 
         return check;
+    }
+
+    //Parsing DHCP info for relevant info
+    private void updateDHCP(DhcpInfo dhcp){
+        String ans = null;
+        if (dhcp != null) {
+            String given[] = dhcp.toString().split(" ");
+            mInfo[0] = given[1]; // Ip Address
+            mInfo[1] = given[5]; // Subnet Mask
+            mInfo[2] = given[3]; // Gateway
+            mInfo[3] = given[12]; // DHCP Server
+            mInfo[4] = given[7]; // DNS Server 1
+            mInfo[5] = given[9]; // DNS Server 2
+        }
     }
 
     /*
