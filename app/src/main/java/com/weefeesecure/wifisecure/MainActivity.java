@@ -77,13 +77,15 @@ public class MainActivity extends AppCompatActivity {
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
+
+        //Check if wifi connection is detected
         mIsConnected = mActiveNetwork != null && mActiveNetwork.isConnectedOrConnecting();
         mIsWifi = mActiveNetwork.getType() == ConnectivityManager.TYPE_WIFI;
         if (mIsConnected && mIsWifi) {
-            Toast.makeText(MainActivity.this, "Wifi Connected", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Wifi Connection Detected", Toast.LENGTH_LONG).show();
         }
         else
-            Toast.makeText(MainActivity.this,"Wifi Not Connected", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this,"Wifi Not Detected", Toast.LENGTH_LONG).show();
 
 
     }
@@ -116,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startButton(View v){
         Button button = (Button) v;
-        //Referencing EditText and TextView
+
         runScans();
     }
 
@@ -148,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runScans() {
+        //Referencing EditText and TextView
         mOut = (TextView) findViewById(R.id.results);
         //Enable scrolling in TextView for more results
         mOut.setMovementMethod(new ScrollingMovementMethod());
@@ -254,20 +257,24 @@ public class MainActivity extends AppCompatActivity {
             ScanResult currentNetwork = getCurrentWifi(wifiScanList);
             if (currentNetwork != null){
                 String wifiStr = "\n\n" + currentNetwork.SSID
-                        + '\n' + readCapabilities(currentNetwork.capabilities);
+                        + "\n\n" + currentNetwork.capabilities.toString()
+                        + "\n\n" + readCapabilities(currentNetwork.capabilities);
                 new DisplayTask().execute(wifiStr);
             }
 
             mScan = wifiScanList;
 
+            WifiAdivisor adv = new WifiAdivisor(currentNetwork);
             String advice = checkSecType(currentNetwork);
             new DisplayTask().execute("\n\n" + advice);
 
-            /*
+            new DisplayTask().execute("\n\n" + adv.isSecure() + " meters away");
+
+            new DisplayTask().execute("\n\n" + currentNetwork.toString());
             new DisplayTask().execute("\n\n" + mDhcpInfo.toString());
             new DisplayTask().execute("\n\n" + mActiveNetwork.toString());
             new DisplayTask().execute("\n\n" + mConInfo.toString());
-            */
+
 
             //Display gateway
 
@@ -312,4 +319,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+
 
