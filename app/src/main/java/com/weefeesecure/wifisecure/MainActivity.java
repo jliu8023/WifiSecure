@@ -54,16 +54,18 @@ public class MainActivity extends AppCompatActivity {
     private boolean mIsConnected;
     private boolean mIsWifi;
 
-    private NetworkInfo mActiveNetwork;
+    private List<ScanResult> mScan;
+    private WifiManager mWFMan;
     private ConnectivityManager mConMan;
 
     private DhcpInfo mDhcpInfo;
     private WifiInfo mConInfo;
+    private NetworkInfo mActiveNetwork;
+
+    private WifiScanReceiver mWifiReceiver;
 
     private TextView mOut;
-    private List<ScanResult> mScan;
-    private WifiManager mWFMan;
-    private WifiScanReceiver mWifiReceiver;
+
     private String mWifis[];
     private String mInfo[];
 
@@ -74,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
         mWFMan = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         mWifiReceiver = new WifiScanReceiver();
-
         mConMan = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
@@ -159,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
         mActiveNetwork = mConMan.getActiveNetworkInfo();
         mDhcpInfo = mWFMan.getDhcpInfo();
         mConInfo = mWFMan.getConnectionInfo();
+
         new ClearTask().execute("");
         Toast.makeText(MainActivity.this, "Starting Scan", Toast.LENGTH_LONG).show();
         int permissionCheck = ContextCompat.checkSelfPermission(this,
@@ -219,22 +222,6 @@ public class MainActivity extends AppCompatActivity {
         return ans;
     }
 
-    private String readCapabilities(String given){
-        String found = "Unidentified Security type";
-        if (given.contains("WPA")){
-            found = "WPA";
-            if (given.contains("WPA2"))
-                found += "/WPA2";
-        }
-        else if (given.contains("WEP"))
-            found = "WEP";
-        if (given.contains("TKIP"))
-            found += " + TKIP";
-        if (given.contains("AES"))
-            found += " + AES";
-        return found;
-    }
-
     //Broadcast Receiver for finding available WiFi connections
     private class WifiScanReceiver extends BroadcastReceiver{
         //Method to run when receiving scan
@@ -258,11 +245,17 @@ public class MainActivity extends AppCompatActivity {
             ScanResult currentNetwork = getCurrentWifi(wifiScanList);
             if (currentNetwork != null){
                 String wifiStr = "\n\n" + currentNetwork.SSID
-                        + "\n\n" + currentNetwork.capabilities.toString()
-                        + "\n\n" + readCapabilities(currentNetwork.capabilities);
+                        + "\n\n" + currentNetwork.capabilities.toString();
                 new DisplayTask().execute(wifiStr);
 
                 WifiAdivisor adv = new WifiAdivisor(currentNetwork);
+
+                String[] cap = adv.getCap();
+                new DisplayTask().execute("\n\n" + "Found capabilities: ");
+                for (int x = 0; x < cap.length; x++){
+                    new DisplayTask().execute("\n" + cap[x]);
+                }
+
                 new DisplayTask().execute("\n\n" + "Secured? " + adv.isSecure());
 
                 new DisplayTask().execute("\n\n" + "Security check: " + adv.isSecAppr());

@@ -26,6 +26,11 @@ public class WifiAdivisor {
         mCapabilities = givenScan.capabilities;
     }
 
+    public String[] getCap(){
+        String found = mCapabilities.replaceAll("\\[","");
+        return found.split("\\]");
+    }
+
     //Compares list of enabled secure settings to unsecure settings
     public boolean isSecure(){
         return (isSecAppr() && isEncAppr() && isSetAppr());
