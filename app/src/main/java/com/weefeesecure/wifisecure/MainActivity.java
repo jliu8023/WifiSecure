@@ -129,10 +129,9 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 // Connect to the web site
-                encodedAuth = Base64.encodeToString("admin:password".getBytes(),Base64.DEFAULT);
-                Document document = Jsoup.connect("http://" + mInfo[2]).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36").header("Authentication",encodedAuth).get();
+                Document document = Jsoup.connect("http://" + mInfo[2] + "/hnap1").get();
                 // Get the html document title
-                result = document.toString();
+                result = "Your router has HNAP1 enabled. It is HIGHLY recommended that you purchase a new router.";
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -144,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             if (result != null)
                 new DisplayTask().execute("\n\n"+outString);
             else
-                new DisplayTask().execute("\n\n"+"could not connect to router settings");
+                new DisplayTask().execute("\n\n"+"Your router is HNAP1 safe");
         }
     }
 
