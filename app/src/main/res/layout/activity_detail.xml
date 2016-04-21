@@ -33,6 +33,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textStyle="bold"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/details_title"
             android:paddingTop="@dimen/md_keylines"
@@ -53,6 +54,8 @@
             android:layout_below="@id/details_description"
             android:paddingTop="@dimen/md_keylines"
             android:paddingBottom="@dimen/md_keylines"
+            android:autoLink="web"
+            android:linksClickable="true"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/details_detail_description"
             android:elevation="5dp"/>

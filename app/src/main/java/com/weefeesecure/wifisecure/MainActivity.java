@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 // Connect to the web site
                 Document document = Jsoup.connect("http://" + mGateway + "/hnap1").get();
                 // Get the html document title
-                result = "Your router has HNAP1 enabled. It is HIGHLY recommended that you purchase a new router.\n" + R.string.hnap_in_depth;
+                result = "Your router has HNAP1 enabled. It is HIGHLY recommended that you purchase a new router.";
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -224,9 +224,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute( String outString ){
             if (outString != null)
-                addInfo("HNAP1 enabled:","true",outString);
+                addInfo("HNAP1 Vulnerability:","Detected",outString+"\n\n"+getResources().getString(R.string.hnap_in_depth));
             else
-                addInfo("HNAP1 enabled:","false","Your router is HNAP1 safe.\n" + R.string.hnap_in_depth);
+                addInfo("HNAP1 Vulnerability:","Not Detected","Your router is HNAP1 safe.\n\n" + getResources().getString(R.string.hnap_in_depth));
+            addInfo("More Information On Router Security","",getResources().getString(R.string.extra_info)+"\n\n"+getResources().getString(R.string.upnp_info));
         }
     }
 

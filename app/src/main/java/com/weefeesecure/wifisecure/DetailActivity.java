@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 
@@ -47,6 +48,7 @@ public class DetailActivity extends AppCompatActivity {
         textView.setText(description);
 
         textView = (TextView) findViewById(R.id.details_detail_description);
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
         textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setText(detailedDescription);
     }
