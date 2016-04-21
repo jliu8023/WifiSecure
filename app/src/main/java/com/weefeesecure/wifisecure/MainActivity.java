@@ -318,35 +318,48 @@ public class MainActivity extends AppCompatActivity {
 
             if (currentNetwork != null){
 
-                addInfo("Current Network:",currentNetwork.SSID,currentNetwork.capabilities);
-
                 mAdv = new WifiAdivisor(currentNetwork);
                 mAdv.setDHCP(mDhcpInfo);
-
                 mGateway = mAdv.getGateway();
 
-                String[] cap = mAdv.getCap();
+                String title, desc, det;
+                String[] temp, temp2, temp3, temp4;
+                ArrayList<String> found;
 
-                String secure;
+                title = "Current Network:";
+                desc = mAdv.getSSID();
+                temp = mAdv.getCap();
+                found = mAdv.enSecTypes();
+                temp2 = found.toArray(new String[found.size()]);
+                found = mAdv.enEncTypes();
+                temp3 = found.toArray(new String[found.size()]);
+                found = mAdv.enSet();
+                temp4 = found.toArray(new String[found.size()]);
+                det = "Here are all the connection capabilities " +
+                        "open on your router right now:\n" + stringArrayToString(temp) +
+                        "\nHere are your enabled security types: \n"+
+                        stringArrayToString(temp2) +
+                        "\nHere are your enabled encryption types: \n"+
+                        stringArrayToString(temp3) +
+                        "\nHere are your enabled settings: \n"+
+                        stringArrayToString(temp4);
 
-                if (mAdv.isSecure()) secure = "Secure";
-                else secure = "Insecure";
+                addInfo(title, desc, det);
 
-                addInfo("Connection Security:",secure,"Here are all the connection capabilities " +
-                        "open on your router right now:\n" + stringArrayToString(cap));
+                title = "Wifi Connection:";
+                if (mAdv.isSecure()) desc = "Secure";
+                else desc = "Insecure";
+                det = "Here are the approved security types: \n" +
+                        stringArrayToString(mAdv.getAccpSec()) +
+                        "\nHere are the approved encryption types: \n" +
+                        stringArrayToString(mAdv.getAccEnc()) +
+                        "\nHere are the approved settings: \n" +
+                        stringArrayToString(mAdv.getAccSet());
+
+                addInfo(title, desc, det);
 
                 new runJsoup().execute();
                 Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
-
-                if (mAdv.isSecAppr()) secure = "Secure";
-                else secure = "Insecure";
-
-                ArrayList<String> found = mAdv.enSecTypes();
-                cap = found.toArray(new String[found.size()]);
-
-                addInfo("Security Type:", secure, "Here are your enabled security types: \n"+
-                        stringArrayToString(cap) + "\n\n Here are the approved security types: \n" +
-                        stringArrayToString(mAdv.getAccpSec()));
 
 //                new DisplayTask().execute("\n\n" + "Security check: " + mAdv.isSecAppr());
 //                new DisplayTask().execute("\n\n" + "Encryption check: " + mAdv.isEncAppr());
