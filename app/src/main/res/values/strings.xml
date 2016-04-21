@@ -4,4 +4,6 @@
     <string name="start_button">Start</string>
     <string name="action_settings">Settings</string>
     <string name="item_title">Details</string>
+    <string name="hnap_in_depth">HNAP (Home Network Administration Protocol) is a network device management tool that can by used to change your device's security settings and even perform a factory reset by anyone with a bad intention. Many routers do no give the option to disable HNAP and some of the ones that do, don't actually turn off HNAP when you tell it to.</string>
+    <string name="extra_info"></string>
 </resources>
