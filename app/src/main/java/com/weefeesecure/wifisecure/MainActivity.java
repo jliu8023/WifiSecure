@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view, int position) {
                 Info info = infoList.get(position);
-                Toast.makeText(getApplicationContext(), info.getTitle() + " is selected!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
 
                 intent.putExtra("title", info.getTitle());
