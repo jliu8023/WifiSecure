@@ -6,6 +6,7 @@ import java.lang.Math;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+//Public class for finding information on ScanResult and DHCPinfo
 public class WifiAdivisor {
 
     private ScanResult mGivenScan;

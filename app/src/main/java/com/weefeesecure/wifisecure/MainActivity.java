@@ -1,65 +1,41 @@
 package com.weefeesecure.wifisecure;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.DhcpInfo;
-import android.net.wifi.WifiConfiguration;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.RemoteException;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
-import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
-
 import android.net.ConnectivityManager;
 import android.content.BroadcastReceiver;
 import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.DefaultItemAnimator;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
 import java.io.IOException;
-import java.io.InputStream;
 
-import android.util.Base64;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -67,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean mIsConnected;
     private boolean mIsWifi;
 
-    private List<ScanResult> mScan;
     private WifiManager mWFMan;
     private ConnectivityManager mConMan;
 
@@ -76,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private NetworkInfo mActiveNetwork;
 
     private WifiScanReceiver mWifiReceiver;
-
-    private TextView mOut;
 
     private String mWifis[];
     private String mGateway;
@@ -276,11 +249,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Finds ScanResult of the currently connected Wifi connection
     private ScanResult getCurrentWifi(List<ScanResult> scanList){
         ScanResult found = null;
         if (scanList != null){
             for (ScanResult currentNetwork : scanList){
-                //new DisplayTask().execute("\n\n" + currentNetwork.SSID);
                 if (mConInfo.getSSID().contains(currentNetwork.SSID)){
                     found = currentNetwork;
                     break;
@@ -290,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
         return found;
     }
 
+    //Changes string array to string
     private String stringArrayToString(String[] arr) {
         String res = "";
         for (int i=0;i<arr.length;++i) {
@@ -318,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (currentNetwork != null){
 
+                //Create new WifiAdvisor for information
                 mAdv = new WifiAdivisor(currentNetwork);
                 mAdv.setDHCP(mDhcpInfo);
                 mGateway = mAdv.getGateway();
@@ -360,36 +335,6 @@ public class MainActivity extends AppCompatActivity {
 
                 new runJsoup().execute();
                 Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
-
-//                new DisplayTask().execute("\n\n" + "Security check: " + mAdv.isSecAppr());
-//                new DisplayTask().execute("\n\n" + "Encryption check: " + mAdv.isEncAppr());
-//                new DisplayTask().execute("\n\n" + "Settings: " + mAdv.isSetAppr());
-
-                /*
-                if (mAdv.isKnown()) {
-                    ArrayList<String> enabled = mAdv.enSecTypes();
-                    if (!enabled.isEmpty()) {
-                        for (int x = 0; x < enabled.size(); x++) {
-
-                        }
-                    }
-
-                    enabled = mAdv.enEncTypes();
-                    if (!enabled.isEmpty()) {
-                        for (int x = 0; x < enabled.size(); x++) {
-
-                        }
-                    }
-
-                    enabled = mAdv.enSet();
-                    if (!enabled.isEmpty()) {
-                        for (int x = 0; x < enabled.size(); x++) {
-
-                        }
-                    }
-                }
-                */
-
             }
 
         }
@@ -405,6 +350,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
+
+    //Request permissions at runtime for Android 6
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
