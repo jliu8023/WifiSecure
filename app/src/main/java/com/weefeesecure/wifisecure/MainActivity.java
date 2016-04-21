@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mOut;
 
     private String mWifis[];
-    private String mInfo[];
+    private String mGateway;
 
     private List<Info> infoList = new ArrayList<>();
     private RecyclerView recyclerView;
@@ -162,31 +162,6 @@ public class MainActivity extends AppCompatActivity {
         mAdapter.notifyDataSetChanged();
     }
 
-    //AsyncTask to display String given on TextView
-    private class DisplayTask extends AsyncTask< String, Void, String> {
-        protected String doInBackground(String... givenString){
-            return givenString[0];
-        }
-        //Appending TextView with new string
-        protected void onPostExecute( String outString ){
-            mOut = (TextView) findViewById(R.id.results_description);
-            mOut.append(outString);
-        }
-    }
-
-
-    //AsyncTask to display String given on TextView
-    private class ClearTask extends AsyncTask< String, Void, String> {
-        protected String doInBackground(String... givenString){
-            return givenString[0];
-        }
-        //Appending TextView with new string
-        protected void onPostExecute( String outString ){
-            mOut = (TextView) findViewById(R.id.results_description);
-            mOut.setText("");
-        }
-    }
-
     private class runJsoup extends AsyncTask<String, Void, String> {
         private String result;
 
@@ -195,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 // Connect to the web site
-                Document document = Jsoup.connect("http://" + mInfo[2] + "/hnap1").get();
+                Document document = Jsoup.connect("http://" + mGateway + "/hnap1").get();
                 // Get the html document title
                 result = "Your router has HNAP1 enabled. It is HIGHLY recommended that you purchase a new router.";
             } catch (IOException e) {
@@ -246,39 +221,6 @@ public class MainActivity extends AppCompatActivity {
         return found;
     }
 
-    private String checkSecType(ScanResult result){
-        String advice = null;
-        if ((result.capabilities.contains("WPA2")
-                ||result.capabilities.contains("WPA2-Personal"))
-                && !result.capabilities.contains("TKIP")){
-            advice = "Security type is good";
-        }
-        else
-            advice = "The Security type should be WPA2 + AES";
-        return advice;
-    }
-
-    //Parsing DHCP info for relevant info
-    private String getDHCPStr(){
-        String ans = null;
-        mInfo = new String[6];
-        String given[] = mDhcpInfo.toString().split(" ");
-        mInfo[0] = given[1]; // Ip Address
-        mInfo[1] = given[5]; // Subnet Mask
-        mInfo[2] = given[3]; // Gateway
-        mInfo[3] = given[12]; // DHCP Server
-        mInfo[4] = given[7]; // DNS Server 1
-        mInfo[5] = given[9]; // DNS Server 2
-        ans = "IP Address" + "\t\t" + given[1] ;
-        ans +=  "\n\n" + "Subnet Mask" + "\t\t" + given[5];
-        ans +=  "\n\n" + "Gateway" + Html.fromHtml("<html><a href=\"http://"
-                + given[3] + "\">" + given[3] + "</a></html>").toString() + "\t\t";
-        ans +=  "\n\n" + "DHCP Server" + "\t\t" + given[12];
-        ans +=  "\n\n" + "DNS Server 1" + "\t\t" + given[7];
-        ans +=  "\n\n" + "DNS Server 2" + "\t\t" + given[9];
-        return ans;
-    }
-
     private String stringArrayToString(String[] arr) {
         String res = "";
         for (int i=0;i<arr.length;++i) {
@@ -294,17 +236,14 @@ public class MainActivity extends AppCompatActivity {
 
             //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
-            // checking scan result size
-            //new DisplayTask().execute("\n\n"+Integer.toString(wifiScanList.size()));
+
+            //Checking scan result size
             mWifis = new String[wifiScanList.size()];
 
             //Obtaining relevant info from ScanResults
             for(int i = 0; i < wifiScanList.size(); i++){
                 mWifis[i] = ((wifiScanList.get(i)).SSID + '\n' );
             }
-
-            //Display ScanResult info
-            //new DisplayTask().execute( mWifis[0]);
 
             ScanResult currentNetwork = getCurrentWifi(wifiScanList);
 
@@ -313,62 +252,45 @@ public class MainActivity extends AppCompatActivity {
                 addInfo("Current Network:",currentNetwork.SSID,currentNetwork.capabilities);
 
                 mAdv = new WifiAdivisor(currentNetwork);
+                mAdv.setDHCP(mDhcpInfo);
+
+                mGateway = mAdv.getGateway();
 
                 String[] cap = mAdv.getCap();
 
                 addInfo("Connection Security:",""+mAdv.isSecure(),"Here are all the connection capabilities " +
                         "open on your router right now:\n" + stringArrayToString(cap));
 
-//                new DisplayTask().execute("\n\n" + "Security check: " + mAdv.isSecAppr());
-//                new DisplayTask().execute("\n\n" + "Encryption check: " + mAdv.isEncAppr());
-//                new DisplayTask().execute("\n\n" + "Settings: " + mAdv.isSetAppr());
+                new runJsoup().execute();
+                Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
 
-/*                if (mAdv.isKnown()) {
-                    new DisplayTask().execute("\n\n" + "Enabled:");
+                /*
+                if (mAdv.isKnown()) {
                     ArrayList<String> enabled = mAdv.enSecTypes();
                     if (!enabled.isEmpty()) {
                         for (int x = 0; x < enabled.size(); x++) {
-                            new DisplayTask().execute("\n" + enabled.get(x));
+
                         }
                     }
 
                     enabled = mAdv.enEncTypes();
                     if (!enabled.isEmpty()) {
                         for (int x = 0; x < enabled.size(); x++) {
-                            new DisplayTask().execute("\n" + enabled.get(x));
+
                         }
                     }
 
                     enabled = mAdv.enSet();
                     if (!enabled.isEmpty()) {
                         for (int x = 0; x < enabled.size(); x++) {
-                            new DisplayTask().execute("\n" + enabled.get(x));
+
                         }
                     }
-                }*/
+                }
+                */
 
             }
 
-/*            mScan = wifiScanList;
-
-
-            String advice = checkSecType(currentNetwork);
-
-            new DisplayTask().execute("\n\n" + advice);
-            new DisplayTask().execute("\n\n" + currentNetwork.toString());
-            new DisplayTask().execute("\n\n" + mDhcpInfo.toString());
-            new DisplayTask().execute("\n\n" + mActiveNetwork.toString());
-            new DisplayTask().execute("\n\n" + mConInfo.toString());
-
-
-            //Display gateway
-
-
-            new DisplayTask().execute("\n\n" + "\n\n" + advice);*/
-            String advice = getDHCPStr();
-            new runJsoup().execute();
-
-            Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
         }
     }
 

@@ -175,7 +175,7 @@ public class WifiAdivisor {
     }
 
     //Parsing DHCP info for relevant info
-    private void updateDHCP(DhcpInfo dhcp){
+    public void setDHCP(DhcpInfo dhcp){
         String ans = null;
         if (dhcp != null) {
             String given[] = dhcp.toString().split(" ");
