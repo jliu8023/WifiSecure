@@ -278,6 +278,8 @@ public class MainActivity extends AppCompatActivity {
         //Method to run when receiving scan
         public void onReceive(Context c, Intent intent) {
 
+            infoList.clear();
+            mAdapter.notifyDataSetChanged();
             //Getting ScanResults
             List<ScanResult> wifiScanList = mWFMan.getScanResults();
 
