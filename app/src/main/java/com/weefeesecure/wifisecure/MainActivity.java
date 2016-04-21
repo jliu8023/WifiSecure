@@ -258,11 +258,30 @@ public class MainActivity extends AppCompatActivity {
 
                 String[] cap = mAdv.getCap();
 
-                addInfo("Connection Security:",""+mAdv.isSecure(),"Here are all the connection capabilities " +
+                String secure;
+
+                if (mAdv.isSecure()) secure = "Secure";
+                else secure = "Insecure";
+
+                addInfo("Connection Security:",secure,"Here are all the connection capabilities " +
                         "open on your router right now:\n" + stringArrayToString(cap));
 
                 new runJsoup().execute();
                 Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
+
+                if (mAdv.isSecAppr()) secure = "Secure";
+                else secure = "Insecure";
+
+                ArrayList<String> found = mAdv.enSecTypes();
+                cap = found.toArray(new String[found.size()]);
+
+                addInfo("Security Type:", secure, "Here are your enabled security types: \n"+
+                        stringArrayToString(cap) + "\n\n Here are the approved security types: \n" +
+                        stringArrayToString(mAdv.getAccpSec()));
+
+//                new DisplayTask().execute("\n\n" + "Security check: " + mAdv.isSecAppr());
+//                new DisplayTask().execute("\n\n" + "Encryption check: " + mAdv.isEncAppr());
+//                new DisplayTask().execute("\n\n" + "Settings: " + mAdv.isSetAppr());
 
                 /*
                 if (mAdv.isKnown()) {

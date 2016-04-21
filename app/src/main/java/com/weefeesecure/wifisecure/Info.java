@@ -1,8 +1,5 @@
 package com.weefeesecure.wifisecure;
 
-/**
- * Created by Jinchi on 4/20/2016.
- */
 public class Info {
     private String title,description,detailedDescription;
 
