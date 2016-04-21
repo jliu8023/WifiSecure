@@ -14,6 +14,7 @@ import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -298,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
                 mGateway = mAdv.getGateway();
 
                 String title, desc, det;
-                String[] temp, temp2, temp3, temp4;
+                String[] temp, temp2, temp3, temp4, temp5;
                 ArrayList<String> found;
 
                 title = "Current Network:";
@@ -310,9 +311,16 @@ public class MainActivity extends AppCompatActivity {
                 temp3 = found.toArray(new String[found.size()]);
                 found = mAdv.enSet();
                 temp4 = found.toArray(new String[found.size()]);
+
                 det = "Here are all the connection capabilities " +
                         "open on your router right now:\n" + stringArrayToString(temp) +
-                        "\nHere are your enabled security types: \n"+
+                        "\n\n" + "IP Address" + "\t\t" + mAdv.getIP() +
+                        "\n\n" + "Subnet Mask" + "\t\t" + mAdv.getSubnet() +
+                        "\n\n" + "Gateway" + "\t\t" + mAdv.getGateway() +
+                        "\n\n" + "DHCP Server" + "\t\t" + mAdv.getDHCPServer() +
+                        "\n\n" + "DNS Server 1" + "\t\t" + mAdv.getDNS1() +
+                        "\n\n" + "DNS Server 2" + "\t\t" + mAdv.getDNS2() +
+                        "\n\nHere are your enabled security types: \n"+
                         stringArrayToString(temp2) +
                         "\nHere are your enabled encryption types: \n"+
                         stringArrayToString(temp3) +
