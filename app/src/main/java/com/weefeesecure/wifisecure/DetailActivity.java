@@ -16,26 +16,36 @@
 
 package com.weefeesecure.wifisecure;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
 
 /**
  * Provides UI for the Detail page with Collapsing Toolbar.
  */
 public class DetailActivity extends AppCompatActivity {
+    private String title, description, detailedDescription;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        // Set Collapsing Toolbar layout to the screen
-        CollapsingToolbarLayout collapsingToolbar =
-                (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        // Set title of Detail page
-        collapsingToolbar.setTitle(getString(R.string.item_title));
+
+        Intent intent = getIntent();
+        title = intent.getStringExtra("title");
+        description = intent.getStringExtra("description");
+        detailedDescription = intent.getStringExtra("detailedDescription");
+
+        TextView textView = (TextView) findViewById(R.id.details_title);
+        textView.setText(title);
+
+        textView = (TextView) findViewById(R.id.details_description);
+        textView.setText(description);
+
+        textView = (TextView) findViewById(R.id.details_detail_description);
+        textView.setText(detailedDescription);
     }
 }
