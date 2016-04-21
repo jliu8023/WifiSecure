@@ -1,7 +1,9 @@
 package com.weefeesecure.wifisecure;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -33,6 +35,8 @@ import android.net.wifi.WifiManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.DefaultItemAnimator;
+
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import java.io.IOException;
@@ -61,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
     private InfoAdapter mAdapter;
 
     private WifiAdivisor mAdv;
+    private boolean canRunJsoup;
+
+    private AlertDialog mDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        createDialog();
 
         recyclerView = (RecyclerView) findViewById(R.id.main_recycler);
 
@@ -101,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mAdv != null) {
-                    Snackbar.make(v, "Your router is located within "+mAdv.getDist()+" meters.",
+                    Snackbar.make(v, "Affective distance from your router is "+mAdv.getDist()+" meters.",
                             Snackbar.LENGTH_LONG).show();
                 }
             }
@@ -127,6 +136,26 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void createDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.alert_msg);
+        builder.setTitle("Warning!");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                canRunJsoup = true;
+                runScans();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                canRunJsoup = false;
+                runScans();
+            }
+        });
+        mDialog = builder.create();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -144,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_start) {
             infoList.clear();
             mAdapter.notifyDataSetChanged();
-            runScans();
+            mDialog.show();
         };
         return super.onOptionsItemSelected(item);
     }
@@ -227,7 +256,33 @@ public class MainActivity extends AppCompatActivity {
                 addInfo("HNAP1 Vulnerability:","Detected",outString+"\n\n"+getResources().getString(R.string.hnap_in_depth));
             else
                 addInfo("HNAP1 Vulnerability:","Not Detected","Your router is HNAP1 safe.\n\n" + getResources().getString(R.string.hnap_in_depth));
-            addInfo("More Information On Router Security","",getResources().getString(R.string.extra_info)+"\n\n"+getResources().getString(R.string.upnp_info));
+        }
+    }
+
+    private class runPort32764 extends AsyncTask<String, Void, String> {
+        private String result;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            try {
+                // Connect to the web site
+                Connection.Response response = Jsoup.connect("http://" + mGateway + ":32764").execute();
+                // Get the html document title
+                if (response != null)
+                    result = "Your router\'s port 32764 is discoverable. It is HIGHLY recommended that you purchase a new router.";
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute( String outString ){
+            if (outString != null)
+                addInfo("Port 32764 Vulnerability:","Detected",outString+"\n\n"+getResources().getString(R.string.port32764_in_depth));
+            else
+                addInfo("Port 32764 Vulnerability:","Not Detected","Your router\'s port 32764 is closed.\n\n" + getResources().getString(R.string.port32764_in_depth));
         }
     }
 
@@ -333,8 +388,13 @@ public class MainActivity extends AppCompatActivity {
 
                 title = "Wifi Connection:";
                 if (mAdv.isSecure()) desc = "Secure";
-                else desc = "Insecure";
-                det = "Here are the approved security types: \n" +
+                else {
+                    desc = "Insecure";
+                    found = mAdv.enDisSet();
+                    det = "The following Wi-Fi insecure connection options are enabled on your machine: \n" + stringArrayToString(found.toArray(new String[found.size()]))
+                    + "\nPlease disable the above options";
+                }
+                det = det + "\n\nHere are the approved security types: \n" +
                         stringArrayToString(mAdv.getAccpSec()) +
                         "\nHere are the approved encryption types: \n" +
                         stringArrayToString(mAdv.getAccEnc()) +
@@ -343,7 +403,15 @@ public class MainActivity extends AppCompatActivity {
 
                 addInfo(title, desc, det);
 
-                new runJsoup().execute();
+                if (canRunJsoup) {
+                    new runJsoup().execute();
+                    new runPort32764().execute();
+                }
+                else {
+                    addInfo("Router requests","tests disabled","Please stop adBlock and press start again.");
+                }
+
+                addInfo("More Information On Router Security","",getResources().getString(R.string.extra_info)+"\n\n"+getResources().getString(R.string.upnp_info));
                 Toast.makeText(MainActivity.this, "Scan Finished", Toast.LENGTH_LONG).show();
             }
 

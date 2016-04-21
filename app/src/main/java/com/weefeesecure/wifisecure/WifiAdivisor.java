@@ -13,6 +13,8 @@ public class WifiAdivisor {
     private String mCapabilities;
     private String[] mInfo = new String[6];
 
+    final private String[] mEmpStr = {" "};
+
     //Secure settings
     final private String[] mApprSecTypes = {"WPA2"};
     final private String[] mApprEncTypes = {"CCMP", "AES", "PERSONAL"};
@@ -157,6 +159,32 @@ public class WifiAdivisor {
             }
         }
 
+        return found;
+    }
+
+    public ArrayList<String> enDisSet(){
+        ArrayList<String> found = new ArrayList<String>(0);
+
+        for (int x = 0; x < mDisaSecTypes.length; x++){
+            if (isEnabled(mDisaSecTypes[x])){
+                found.add(mDisaSecTypes[x]);
+                break;
+            }
+        }
+
+        for (int x = 0; x < mDisaEncTypes.length; x++){
+            if (isEnabled(mDisaEncTypes[x])){
+                found.add(mDisaEncTypes[x]);
+                break;
+            }
+        }
+
+        for (int x = 0; x < mUnsecSets.length; x++){
+            if (isEnabled(mUnsecSets[x])){
+                found.add(mUnsecSets[x]);
+                break;
+            }
+        }
         return found;
     }
 
